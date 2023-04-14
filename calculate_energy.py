@@ -1,4 +1,5 @@
 import json
+from tabulate import tabulate
 
 fp = open("rgw_traces.json")
 
@@ -19,13 +20,14 @@ for trace in data["data"]:
     pods = {"p1": pod1, "p2": pod2, "p3": pod3}
     # same bucket should be used for all spans in the trace
     spans = trace["spans"]
-    bucket_name = get_tag(spans[0]["tags"], "bucket_name", "internal")
+    bucket_name = "internal"
     for span in spans:
         pod_name = pods[span["processID"]]
         if pod_name is None:
             print("missing pod name for span: "+span["spanID"]+" in trace: "+trace["traceID"])
             continue
         duration = span["duration"]
+        bucket_name = get_tag(span["tags"], "bucket_name", bucket_name)
         if pod_name in durations:
             if bucket_name in durations[pod_name]:
                 durations[pod_name][bucket_name] += duration
@@ -61,6 +63,8 @@ for end_item in end_energy.items():
         energy_diff[pod_name] = float(end_item[1]) - float(start_energy[pod_name])
 
 
+print(tabulate(energy_diff.items(), headers=["pod name", "energy (Joul)"], tablefmt='fancy_grid'))
+
 bucket_energy = {}
 
 for pod_stats in durations.items():
@@ -80,7 +84,5 @@ for pod_stats in durations.items():
             else:
                 bucket_energy[bucket_name] = percent*energy
 
-from tabulate import tabulate
-
-print(tabulate(bucket_energy.items(), headers=["bucket name", "energy (KJ)"], tablefmt='fancy_grid'))
+print(tabulate(bucket_energy.items(), headers=["bucket name", "energy (Joul)"], tablefmt='fancy_grid'))
 
