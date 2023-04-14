@@ -29,9 +29,6 @@ install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/)
 $ eval $(minikube docker-env)
 ```
 
-## Install Kepler
-> TODO
-
 ## Install Jaeger
 * install cert-manager:
 ```
@@ -140,6 +137,22 @@ gateway:
   annotations:
     sidecar.jaegertracing.io/inject: "true"
 ```
+
+## Install Prometheus and Grafana
+```
+$ git clone https://github.com/prometheus-operator/kube-prometheus
+$ cd kube-prometheus
+$ kubectl apply --server-side -f manifests/setup
+$ until kubectl get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
+$ kubectl apply -f manifests/
+```
+
+# Install Kepler
+Use [kepler-deployment.yaml](./kepler-deployment.yaml) to deploy Kepler and ServiceMonitor.
+```
+$ kubectl apply -f kepler-deployment.yaml
+```
+
 ## Test
 * we will create storage class and a bucket:
 ```
